@@ -1,6 +1,9 @@
+using ApiGateway.GraphQLObj.GrahQLMutations;
 using ApiGateway.GraphQLObj.GrahQLQueries;
 using ApiGateway.GraphQLObj.GrahQLSchema;
 using ApiGateway.GraphQLObj.GraphQL;
+using ApiGateway.GraphQLObj.GraphQLTypes;
+using ApiGateway.RedisPubSub;
 using GraphiQl;
 using GraphQL;
 using GraphQL.Types;
@@ -27,20 +30,18 @@ namespace ApiGateway
         {
             services.AddTransient<IDocumentExecuter, DocumentExecuter>();
             services.AddTransient<RootQuery>();
-            //services.AddTransient<ProductType>();
+            services.AddTransient<RootMutation>();
+            services.AddTransient<ProductType>();
             services.AddTransient<CategoryType>();
+            services.AddTransient<CategoryInputType>();
+            services.AddScoped<IRedisPubSub, RedisPubSubHandler>();
+
             var sp = services.BuildServiceProvider();
             services.AddSingleton<ISchema>(new AppSchema(new FuncDependencyResolver(type => sp.GetService(type))));
-            services.AddMassTransit(x =>
-            {
-                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cfg =>
-                {
-                    cfg.Host("rabbitmq://localhost");
-                }));
-            });
-            services.AddMassTransitHostedService();
+            
             services.AddControllers()
-        .AddNewtonsoftJson(o => o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+                    .AddNewtonsoftJson(o => 
+                        o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

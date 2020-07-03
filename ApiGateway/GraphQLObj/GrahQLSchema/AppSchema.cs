@@ -1,4 +1,5 @@
-﻿using ApiGateway.GraphQLObj.GrahQLQueries;
+﻿using ApiGateway.GraphQLObj.GrahQLMutations;
+using ApiGateway.GraphQLObj.GrahQLQueries;
 using GraphQL;
 using GraphQL.Types;
 
@@ -10,6 +11,7 @@ namespace ApiGateway.GraphQLObj.GrahQLSchema
             : base(resolver)
         {
             Query = resolver.Resolve<RootQuery>();
+            Mutation = resolver.Resolve<RootMutation>();
         }
     }
 }

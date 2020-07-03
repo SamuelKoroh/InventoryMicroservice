@@ -1,4 +1,5 @@
 using InventoryService.BackgroundServices.Categories;
+using InventoryService.BackgroundServices.Products;
 using InventoryService.Domain;
 using InventoryService.Domain.Services;
 using InventoryService.Persistence;
@@ -24,14 +25,24 @@ namespace InventoryService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<InventoryDbContext>(config => config.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddTransient<IUnitOfWork, UnitOfWork>();
-            services.AddTransient<ICategoryService, CategoryService>();
-            services.AddTransient<IProductService, ProductService>();
-            services.AddTransient<IRequestService, RequestService>();
+            services.AddDbContext<InventoryDbContext>(config => 
+                config.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IRequestService, RequestService>();
+
             services.AddHostedService<GetCategories>();
+            services.AddHostedService<GetCategoryById>();
+            services.AddHostedService<GetProducts>();
+            services.AddHostedService<GetProductsByCategoryId>();
+            services.AddHostedService<CreateCategory>();
+            services.AddHostedService<UpdateCategory>();
+            services.AddHostedService<DeleteCategory>();
+
             services.AddControllers()
-        .AddNewtonsoftJson(o => o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+                    .AddNewtonsoftJson(o => 
+                        o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

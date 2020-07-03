@@ -5,10 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="GraphQLObj\GrahQLMutations\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="graphiql" Version="2.0.0" />
     <PackageReference Include="GraphQL" Version="2.4.0" />
     <PackageReference Include="MassTransit" Version="7.0.1-develop.2858" />
