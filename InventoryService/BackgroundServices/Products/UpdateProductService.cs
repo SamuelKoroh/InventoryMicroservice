@@ -9,16 +9,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace InventoryService.BackgroundServices.Categories
+namespace InventoryService.BackgroundServices.Products
 {
-    public class UpdateCategory : BackgroundService
+    public class UpdateProductService : BackgroundService
     {
         private static ConfigurationOptions configuration = ConfigurationOptions.Parse("localhost:6379");
         private static ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(configuration);
 
         public IServiceProvider Services { get; }
 
-        public UpdateCategory(IServiceProvider serviceProvider)
+        public UpdateProductService(IServiceProvider serviceProvider)
         {
             Services = serviceProvider;
         }
@@ -27,25 +27,25 @@ namespace InventoryService.BackgroundServices.Categories
             var database = connection.GetDatabase();
             var Subscribe = connection.GetSubscriber();
 
-            await Subscribe.SubscribeAsync("update-category", async (channel, message) =>
+            await Subscribe.SubscribeAsync("update-product", async (channel, message) =>
             {
-                var category = JsonConvert.DeserializeObject<Category>(Encoding.UTF8.GetString(message));
+                var product = JsonConvert.DeserializeObject<Product>(Encoding.UTF8.GetString(message));
                 var response = string.Empty;
 
                 using var scope = Services.CreateScope();
-                var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+                var productService = scope.ServiceProvider.GetRequiredService<IProductService>();
 
-                var categoryToUpdate = await categoryService.GetCategoryById(category.Id);
+                var productToUpdate = await productService.GetProductById(product.Id);
 
-                if (categoryToUpdate == null)
-                    response = "The category does not exists!";
+                if (productToUpdate == null)
+                    response = "The product does not exists!";
                 else
                 {
-                    await categoryService.UpdateCategory(categoryToUpdate, category);
-                    response = "The category has been updated";
+                    await productService.UpdateProduct(productToUpdate, product);
+                    response = "The product has been updated";
                 }
 
-                await Subscribe.PublishAsync("category-updated", response);
+                await Subscribe.PublishAsync("product-updated", response);
             });
         }
     }

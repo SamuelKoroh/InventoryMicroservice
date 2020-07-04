@@ -1,5 +1,6 @@
 using InventoryService.BackgroundServices.Categories;
 using InventoryService.BackgroundServices.Products;
+using InventoryService.BackgroundServices.Requests;
 using InventoryService.Domain;
 using InventoryService.Domain.Services;
 using InventoryService.Persistence;
@@ -32,13 +33,21 @@ namespace InventoryService
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IRequestService, RequestService>();
 
-            services.AddHostedService<GetCategories>();
-            services.AddHostedService<GetCategoryById>();
-            services.AddHostedService<GetProducts>();
-            services.AddHostedService<GetProductsByCategoryId>();
-            services.AddHostedService<CreateCategory>();
-            services.AddHostedService<UpdateCategory>();
-            services.AddHostedService<DeleteCategory>();
+            services.AddHostedService<GetCategoriesService>();
+            services.AddHostedService<GetCategoryByIdService>();
+            services.AddHostedService<GetProductsService>();
+            services.AddHostedService<CreateProductService>();
+            services.AddHostedService<UpdateProductService>();
+            services.AddHostedService<DeleteProductService>();
+            services.AddHostedService<GetProductsByCategoryIdService>();
+            services.AddHostedService<CreateCategoryService>();
+            services.AddHostedService<UpdateCategoryService>();
+            services.AddHostedService<DeleteCategoryService>();
+            services.AddHostedService<PlaceRequestService>();
+            services.AddHostedService<RequestApprovalService>();
+            services.AddHostedService<GetAvailableProductsService>();
+            services.AddHostedService<GetAllRequestService>();
+            services.AddHostedService<GetAllRequestByRequesterService>();
 
             services.AddControllers()
                     .AddNewtonsoftJson(o => 

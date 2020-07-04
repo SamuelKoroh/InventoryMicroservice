@@ -1,5 +1,4 @@
 ﻿using InventoryService.Domain.Services;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -7,19 +6,20 @@ using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace InventoryService.BackgroundServices.Products
+namespace InventoryService.BackgroundServices.Categories
 {
-    public class GetProducts : BackgroundService
+    public class GetCategoriesService : BackgroundService
     {
         private static ConfigurationOptions configuration = ConfigurationOptions.Parse("localhost:6379");
         private static ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(configuration);
 
         public IServiceProvider Services { get; }
 
-        public GetProducts(IServiceProvider serviceProvider)
+        public GetCategoriesService(IServiceProvider serviceProvider)
         {
             Services = serviceProvider;
         }
@@ -27,21 +27,20 @@ namespace InventoryService.BackgroundServices.Products
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-
             using var scope = Services.CreateScope();
-            var _productService = scope.ServiceProvider.GetRequiredService <IProductService>();
+            var _categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
 
             var database = connection.GetDatabase();
             var Subscribe = connection.GetSubscriber();
 
+            var categories =  await _categoryService.GetCategories();
+            var data = JsonConvert.SerializeObject(categories);
 
-            var products =  await _productService.GetProducts();
-            var data = JsonConvert.SerializeObject(products);
-
-             await Subscribe.SubscribeAsync("get-products", async (channel, message) =>
+             await Subscribe.SubscribeAsync("get-categories", async (channel, message) =>
             {
-                await Subscribe.PublishAsync("get-products", data);
+                await Subscribe.PublishAsync("get-categories", data);
             });
+
         }
     }
 }

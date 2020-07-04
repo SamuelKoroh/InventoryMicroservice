@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 
 namespace InventoryService.BackgroundServices.Products
 {
-    public class GetProductsByCategoryId : BackgroundService
+    public class GetProductsByCategoryIdService : BackgroundService
     {
         private static ConfigurationOptions configuration = ConfigurationOptions.Parse("localhost:6379");
         private static ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(configuration);
 
         public IServiceProvider Services { get; }
 
-        public GetProductsByCategoryId(IServiceProvider serviceProvider)
+        public GetProductsByCategoryIdService(IServiceProvider serviceProvider)
         {
             Services = serviceProvider;
         }

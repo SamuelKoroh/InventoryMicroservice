@@ -9,15 +9,15 @@ namespace ApiGateway.RedisPubSub
 {
     public class RedisPubSubHandler : IRedisPubSub
     {
-        private static ConfigurationOptions configuration = ConfigurationOptions.Parse("localhost:6379");
-        private static ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(configuration);
-        private static ConcurrentDictionary<string, TaskCompletionSource<object>> callBackMapper =
+        private static readonly ConfigurationOptions _configuration = ConfigurationOptions.Parse("localhost:6379");
+        private static readonly ConnectionMultiplexer _connection = ConnectionMultiplexer.Connect(_configuration);
+        private static readonly ConcurrentDictionary<string, TaskCompletionSource<object>> _callBackMapper =
                 new ConcurrentDictionary<string, TaskCompletionSource<object>>();
 
         public Task<object> HandleAndReturnMessage(string publishChannel, string subscribeChannel, object data, bool serializeData = false, CancellationToken cancellationToken = default)
         {
-            var database = connection.GetDatabase();
-            var publisher = connection.GetSubscriber();
+            var database = _connection.GetDatabase();
+            var publisher = _connection.GetSubscriber();
             var tcs = new TaskCompletionSource<object>();
 
             var messageData = serializeData ? JsonConvert.SerializeObject(data) : data.ToString();
@@ -29,15 +29,15 @@ namespace ApiGateway.RedisPubSub
                 tcs.TrySetResult(Encoding.UTF8.GetString(message));
             });
 
-            callBackMapper.TryAdd(subscribeChannel, tcs);
+            _callBackMapper.TryAdd(subscribeChannel, tcs);
 
             return tcs.Task;
         }
 
         public Task<object> HandleAndDeserialize<TDeserializeObject>(string publishChannel, string subscribeChannel, string messageData = "", CancellationToken cancellationToken = default)
         {
-            var database = connection.GetDatabase();
-            var publisher = connection.GetSubscriber();
+            var database = _connection.GetDatabase();
+            var publisher = _connection.GetSubscriber();
             var tcs = new TaskCompletionSource<object>();
 
             publisher.Publish(publishChannel, messageData);
@@ -49,7 +49,7 @@ namespace ApiGateway.RedisPubSub
                 tcs.TrySetResult(result);
             });
 
-            callBackMapper.TryAdd(subscribeChannel, tcs);
+            _callBackMapper.TryAdd(subscribeChannel, tcs);
 
 
             return tcs.Task;

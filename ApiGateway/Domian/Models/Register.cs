@@ -1,6 +1,6 @@
-﻿namespace IdentityService.Resources
+﻿namespace ApiGateway.Domian.Models
 {
-    public class RegisterResource
+    public class Register
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }

@@ -1,6 +1,5 @@
 ﻿using ApiGateway.Domain.Models;
 using ApiGateway.RedisPubSub;
-using ApiGateway.RedisPubSub.Publish;
 using GraphQL.Types;
 
 namespace ApiGateway.GraphQLObj.GraphQL

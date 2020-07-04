@@ -4,15 +4,21 @@ using ApiGateway.GraphQLObj.GrahQLSchema;
 using ApiGateway.GraphQLObj.GraphQL;
 using ApiGateway.GraphQLObj.GraphQLTypes;
 using ApiGateway.RedisPubSub;
+using ApiGateway.Utils;
 using GraphiQl;
 using GraphQL;
+using GraphQL.Validation;
+using GraphQL.Server.Authorization.AspNetCore;
 using GraphQL.Types;
-using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Text;
 
 namespace ApiGateway
 {
@@ -29,16 +35,49 @@ namespace ApiGateway
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IDocumentExecuter, DocumentExecuter>();
-            services.AddScoped<RootQuery>();
-            services.AddScoped<RootMutation>();
-            services.AddScoped<ProductType>();
-            services.AddScoped<CategoryType>();
-            services.AddScoped<CategoryInputType>();
-            services.AddScoped<IRedisPubSub, RedisPubSubHandler>();
+            services.AddTransient<RootQuery>();
+            services.AddTransient<RootMutation>();
+            services.AddTransient<ProductType>();
+            services.AddTransient<RequestType>();
+            services.AddTransient<CategoryType>();
+            services.AddTransient<ProductInputType>();
+            services.AddTransient<CategoryInputType>();
+            services.AddTransient<RegisterInputType>();
+            services.AddTransient<LoginInputType>();
+            services.AddTransient<RequestInputType>();
+            services.AddTransient<RequestApprovalInputType>();
+            services.AddTransient<IRedisPubSub, RedisPubSubHandler>();
 
-            var sp = services.BuildServiceProvider();
-            services.AddSingleton<ISchema>(new AppSchema(new FuncDependencyResolver(type => sp.GetService(type))));
-            
+            services.AddScoped<IDependencyResolver>(type => new FuncDependencyResolver(type.GetService));
+            services.AddScoped<ISchema, AppSchema>();
+
+            services.AddAuthentication(opt =>
+            {
+                opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(opt =>
+            {
+                opt.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(
+                            Configuration.GetSection("JwtSetting:SecretKey").Value))
+                };
+            });
+
+            services.AddHttpContextAccessor();
+            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(Policies.InventoryKeeper, _ => _.RequireClaim(ClaimTypes.Role, Policies.InventoryKeeper));
+                options.AddPolicy(Policies.Approver, _ => _.RequireClaim(ClaimTypes.Role, Policies.Approver));
+                options.AddPolicy(Policies.Requester, _ => _.RequireClaim(ClaimTypes.Role, Policies.Requester));
+            });
+
             services.AddControllers()
                     .AddNewtonsoftJson(o => 
                         o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
@@ -57,6 +96,7 @@ namespace ApiGateway
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
