@@ -28,12 +28,12 @@ namespace ApiGateway
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IDocumentExecuter, DocumentExecuter>();
-            services.AddTransient<RootQuery>();
-            services.AddTransient<RootMutation>();
-            services.AddTransient<ProductType>();
-            services.AddTransient<CategoryType>();
-            services.AddTransient<CategoryInputType>();
+            services.AddScoped<IDocumentExecuter, DocumentExecuter>();
+            services.AddScoped<RootQuery>();
+            services.AddScoped<RootMutation>();
+            services.AddScoped<ProductType>();
+            services.AddScoped<CategoryType>();
+            services.AddScoped<CategoryInputType>();
             services.AddScoped<IRedisPubSub, RedisPubSubHandler>();
 
             var sp = services.BuildServiceProvider();

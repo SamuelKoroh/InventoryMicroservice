@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,22 +13,38 @@ namespace ApiGateway.RedisPubSub
         private static ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(configuration);
         private static ConcurrentDictionary<string, TaskCompletionSource<object>> callBackMapper =
                 new ConcurrentDictionary<string, TaskCompletionSource<object>>();
-        public Task<TResponse> Handler<TData, TResponse>(TData data, string publishChannel, string subscribeChannel, CancellationToken cancellationToken = default)
-        {
-            throw new System.NotImplementedException();
-        }
 
-        public  Task<object> Handler<TResponse>(string publishChannel, string subscribeChannel, CancellationToken cancellationToken = default)
+        public Task<object> HandleAndReturnMessage(string publishChannel, string subscribeChannel, object data, bool serializeData = false, CancellationToken cancellationToken = default)
         {
             var database = connection.GetDatabase();
             var publisher = connection.GetSubscriber();
             var tcs = new TaskCompletionSource<object>();
 
-            publisher.Publish(publishChannel, "");
+            var messageData = serializeData ? JsonConvert.SerializeObject(data) : data.ToString();
+
+            publisher.Publish(publishChannel, messageData);
 
             publisher.Subscribe(subscribeChannel, (channel, message) =>
             {
-                var result = JsonConvert.DeserializeObject<TResponse>(message);
+                tcs.TrySetResult(Encoding.UTF8.GetString(message));
+            });
+
+            callBackMapper.TryAdd(subscribeChannel, tcs);
+
+            return tcs.Task;
+        }
+
+        public Task<object> HandleAndDeserialize<TDeserializeObject>(string publishChannel, string subscribeChannel, string messageData = "", CancellationToken cancellationToken = default)
+        {
+            var database = connection.GetDatabase();
+            var publisher = connection.GetSubscriber();
+            var tcs = new TaskCompletionSource<object>();
+
+            publisher.Publish(publishChannel, messageData);
+
+            publisher.Subscribe(subscribeChannel, (channel, message) =>
+            {
+                var result = JsonConvert.DeserializeObject<TDeserializeObject>(message);
 
                 tcs.TrySetResult(result);
             });

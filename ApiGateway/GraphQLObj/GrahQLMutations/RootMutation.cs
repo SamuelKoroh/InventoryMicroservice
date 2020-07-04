@@ -1,13 +1,13 @@
 ﻿using ApiGateway.Domain.Models;
 using ApiGateway.GraphQLObj.GraphQLTypes;
-using ApiGateway.RedisPubSub.Publish;
+using ApiGateway.RedisPubSub;
 using GraphQL.Types;
 
 namespace ApiGateway.GraphQLObj.GrahQLMutations
 {
     public class RootMutation : ObjectGraphType
     {
-        public RootMutation()
+        public RootMutation(IRedisPubSub redisPubSub)
         {
             FieldAsync<StringGraphType>(
                 "addCategory",
@@ -17,7 +17,7 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                 {
                     var category = context.GetArgument<Category>("category");
                      
-                    return await CategoryPubSub.CreateCategory(category);
+                    return await redisPubSub.HandleAndReturnMessage("create-category", "category-created", category, true);
                 });
 
             FieldAsync<StringGraphType>(
@@ -30,7 +30,7 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                     var category = context.GetArgument<Category>("category");
                     category.Id = context.GetArgument<int>("categoryId");
 
-                    return await CategoryPubSub.UpdateCategory(category);
+                    return await redisPubSub.HandleAndReturnMessage("update-category", "category-updated", category, true);
                 });
 
             FieldAsync<StringGraphType>(
@@ -40,7 +40,8 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                 resolve: async context =>
                 {
                     var categoryId = context.GetArgument<int>("categoryId");
-                    return await CategoryPubSub.DeleteCategory(categoryId);
+
+                    return await redisPubSub.HandleAndReturnMessage("delete-category", "category-deleted", categoryId);
                 });
         }
     }

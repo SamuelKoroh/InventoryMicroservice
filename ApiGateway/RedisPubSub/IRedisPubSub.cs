@@ -5,7 +5,7 @@ namespace ApiGateway.RedisPubSub
 {
     public interface IRedisPubSub
     {
-        Task<TResponse> Handler<TData, TResponse>(TData data, string publishChannel, string subscribeChannel, CancellationToken cancellationToken = default);
-        Task<object> Handler<TResponse>(string publishChannel, string subscribeChannel, CancellationToken cancellationToken = default);
+        Task<object> HandleAndReturnMessage(string publishChannel, string subscribeChannel, object data, bool serializeData = false, CancellationToken cancellationToken = default);
+        Task<object> HandleAndDeserialize<TDeserializeObject>(string publishChannel, string subscribeChannel, string messageData = "", CancellationToken cancellationToken = default);
     }
 }

@@ -38,7 +38,7 @@ namespace InventoryService.BackgroundServices.Categories
 
              await Subscribe.SubscribeAsync("get-categories", async (channel, message) =>
             {
-                await Subscribe.PublishAsync("get-categories-reply", data);
+                await Subscribe.PublishAsync("get-categories", data);
             });
 
         }

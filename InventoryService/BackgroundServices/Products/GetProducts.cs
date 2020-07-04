@@ -40,7 +40,7 @@ namespace InventoryService.BackgroundServices.Products
 
              await Subscribe.SubscribeAsync("get-products", async (channel, message) =>
             {
-                await Subscribe.PublishAsync("get-products-reply", data);
+                await Subscribe.PublishAsync("get-products", data);
             });
         }
     }

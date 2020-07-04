@@ -1,4 +1,5 @@
 ﻿using ApiGateway.Domain.Models;
+using ApiGateway.RedisPubSub;
 using ApiGateway.RedisPubSub.Publish;
 using GraphQL.Types;
 
@@ -6,7 +7,7 @@ namespace ApiGateway.GraphQLObj.GraphQL
 {
     public class ProductType : ObjectGraphType<Product>
     {
-        public ProductType()
+        public ProductType(IRedisPubSub redisPubSub)
         {
             Field(x => x.Id);
             Field(x => x.Name);
@@ -15,7 +16,8 @@ namespace ApiGateway.GraphQLObj.GraphQL
             Field(x => x.IsAvailable);
             FieldAsync<CategoryType>("category",
                resolve: async context =>
-               await CategoryPubSub.GetCategoryById(context.Source.CategoryId));
+               await redisPubSub.HandleAndDeserialize<Category>
+               ("get-category-by-id", "get-category-by-id-reply", context.Source.CategoryId.ToString()));
         }
     }
 }
