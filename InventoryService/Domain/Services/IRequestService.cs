@@ -12,5 +12,6 @@ namespace InventoryService.Domain.Services
         Task<bool> IsQuantityEnough(Request request);
         Task<bool> IsProductAvailable(Request request);
         Task<Request> GetRequestById(int requestId);
+        Task<IEnumerable<Request>> GetAllRequest();
     }
 }

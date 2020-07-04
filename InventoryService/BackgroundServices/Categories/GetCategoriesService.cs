@@ -1,4 +1,5 @@
 ﻿using InventoryService.Domain.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -11,30 +12,34 @@ using System.Threading.Tasks;
 
 namespace InventoryService.BackgroundServices.Categories
 {
-    public class GetCategories : BackgroundService
+    public class GetCategoriesService : BackgroundService
     {
         private static ConfigurationOptions configuration = ConfigurationOptions.Parse("localhost:6379");
         private static ConnectionMultiplexer connection = ConnectionMultiplexer.Connect(configuration);
-        private readonly ICategoryService _categoryService;
 
-        public GetCategories(ICategoryService categoryService)
+        public IServiceProvider Services { get; }
+
+        public GetCategoriesService(IServiceProvider serviceProvider)
         {
-            _categoryService = categoryService;
+            Services = serviceProvider;
         }
 
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            using var scope = Services.CreateScope();
+            var _categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+
             var database = connection.GetDatabase();
             var Subscribe = connection.GetSubscriber();
 
             var categories =  await _categoryService.GetCategories();
-            var messaage = JsonConvert.SerializeObject(categories);
+            var data = JsonConvert.SerializeObject(categories);
 
-            // await Subscribe.SubscribeAsync("get-categories", async (channel, message) =>
-            //{
-                await Subscribe.PublishAsync("get-categories", messaage);
-            //});
+             await Subscribe.SubscribeAsync("get-categories", async (channel, message) =>
+            {
+                await Subscribe.PublishAsync("get-categories", data);
+            });
 
         }
     }

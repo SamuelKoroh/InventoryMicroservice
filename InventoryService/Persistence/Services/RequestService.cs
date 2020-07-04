@@ -15,6 +15,10 @@ namespace InventoryService.Persistence.Services
             _unitOfWork = unitOfWork;
         }
 
+        public async Task<IEnumerable<Request>> GetAllRequest()
+        {
+            return await _unitOfWork.Requests.GetAllAsync();
+        }
         public async Task<Request> GetRequestById(int requestId)
         {
             return await _unitOfWork.Requests.GetByIdAsync(requestId);

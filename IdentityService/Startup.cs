@@ -1,3 +1,5 @@
+using IdentityService.AppSettings;
+using IdentityService.BackgroundServices;
 using IdentityService.Domain.Model;
 using IdentityService.Domain.Services;
 using IdentityService.Persistence;
@@ -25,11 +27,17 @@ namespace IdentityService
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DataContext>(config => config.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+            services.Configure<JwtSetting>(Configuration.GetSection("JwtSetting"));
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<DataContext>();
-            services.AddTransient<IIdentityService, AuthService>();
-        services.AddControllers()
-        .AddNewtonsoftJson(o => o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            services.AddTransient<IAuthService, AuthService>();
+            services.AddHostedService<RegisterAccount>();
+            services.AddHostedService<AccountLogin>();
+
+            services.AddControllers()
+                    .AddNewtonsoftJson(o => 
+                    o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
