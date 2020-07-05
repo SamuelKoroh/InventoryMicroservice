@@ -9,8 +9,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InventoryService.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    [Migration("20200704163450_RequestModel")]
-    partial class RequestModel
+    [Migration("20200705122715_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -33,6 +33,18 @@ namespace InventoryService.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Electronics"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Fashion"
+                        });
                 });
 
             modelBuilder.Entity("InventoryService.Domain.Models.Product", b =>
@@ -62,6 +74,53 @@ namespace InventoryService.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryId = 1,
+                            IsAvailable = true,
+                            Name = "LG DVD Player",
+                            Price = 14000m,
+                            Quantity = 50
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CategoryId = 1,
+                            IsAvailable = true,
+                            Name = "Sony DVD Player",
+                            Price = 15000m,
+                            Quantity = 50
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CategoryId = 1,
+                            IsAvailable = true,
+                            Name = "Samsung DVD Player",
+                            Price = 15000m,
+                            Quantity = 50
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryId = 2,
+                            IsAvailable = true,
+                            Name = "Men Short",
+                            Price = 3000m,
+                            Quantity = 50
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CategoryId = 2,
+                            IsAvailable = true,
+                            Name = "Women sleeping garment",
+                            Price = 5000m,
+                            Quantity = 50
+                        });
                 });
 
             modelBuilder.Entity("InventoryService.Domain.Models.Request", b =>
@@ -88,6 +147,8 @@ namespace InventoryService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProductId");
+
                     b.ToTable("Requests");
                 });
 
@@ -96,6 +157,15 @@ namespace InventoryService.Migrations
                     b.HasOne("InventoryService.Domain.Models.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("InventoryService.Domain.Models.Request", b =>
+                {
+                    b.HasOne("InventoryService.Domain.Models.Product", "Product")
+                        .WithMany("Requests")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

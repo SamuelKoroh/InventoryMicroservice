@@ -7,12 +7,14 @@ using ApiGateway.Utils;
 using GraphQL.Authorization;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace ApiGateway.GraphQLObj.GrahQLMutations
 {
     public class RootMutation : BaseObjectGraphType
     {
-        public RootMutation(IRedisPubSub redisPubSub, IHttpContextAccessor httpContextAccessor)
+        private string SerializeObject(object data) => JsonConvert.SerializeObject(data);
+        public RootMutation(IRabbitMQPubSub rabbitMQPubSub, IHttpContextAccessor httpContextAccessor)
             :base(httpContextAccessor)
         {
             FieldAsync<StringGraphType>(
@@ -22,9 +24,7 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                 resolve: async context =>
                 {
                     var category = context.GetArgument<Category>("category");
-                     
-                    return await redisPubSub.HandleAndReturnMessage(Channel.CreateCategory, 
-                        Channel.CategoryCreated, category, true);
+                    return await rabbitMQPubSub.Handle(Channel.CreateCategory, SerializeObject(category));
                 }).AuthorizeWith(Policies.InventoryKeeper);
 
             FieldAsync<StringGraphType>(
@@ -37,8 +37,7 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                     var category = context.GetArgument<Category>("category");
                     category.Id = context.GetArgument<int>("categoryId");
 
-                    return await redisPubSub.HandleAndReturnMessage(Channel.UpdateCategory, 
-                        Channel.CategoryUpdated, category, true);
+                    return await rabbitMQPubSub.Handle(Channel.UpdateCategory, SerializeObject(category));
                 }).AuthorizeWith(Policies.InventoryKeeper);
 
             FieldAsync<StringGraphType>(
@@ -49,8 +48,7 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                 {
                     var categoryId = context.GetArgument<int>("categoryId");
 
-                    return await redisPubSub.HandleAndReturnMessage(Channel.DeleteCategory, 
-                        Channel.CategoryDeleted, categoryId);
+                    return await rabbitMQPubSub.Handle(Channel.DeleteCategory,categoryId.ToString());
                 }).AuthorizeWith(Policies.InventoryKeeper);
 
             FieldAsync<StringGraphType>(
@@ -61,8 +59,7 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                 {
                     var product = context.GetArgument<Product>("product");
 
-                    return await redisPubSub.HandleAndReturnMessage(Channel.CreateProduct, 
-                        Channel.ProductCreated, product, true);
+                    return await rabbitMQPubSub.Handle(Channel.CreateProduct, SerializeObject(product));
                 }).AuthorizeWith(Policies.InventoryKeeper);
 
             FieldAsync<StringGraphType>(
@@ -75,8 +72,7 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                     var product = context.GetArgument<Product>("product");
                     product.Id = context.GetArgument<int>("productId");
 
-                    return await redisPubSub.HandleAndReturnMessage(Channel.UpdateProduct, 
-                        Channel.ProductUpdated, product, true);
+                    return await rabbitMQPubSub.Handle(Channel.UpdateProduct, SerializeObject(product));
                 }).AuthorizeWith(Policies.InventoryKeeper);
 
             FieldAsync<StringGraphType>(
@@ -87,8 +83,7 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                 {
                     var productId = context.GetArgument<int>("productId");
 
-                    return await redisPubSub.HandleAndReturnMessage(Channel.DeleteProduct, 
-                        Channel.ProductDeleted, productId);
+                    return await rabbitMQPubSub.Handle(Channel.DeleteProduct, productId.ToString());
                 }).AuthorizeWith(Policies.InventoryKeeper);
 
             FieldAsync<StringGraphType>(
@@ -99,8 +94,7 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                 {
                     var register = context.GetArgument<Register>("register");
 
-                    return await redisPubSub.HandleAndReturnMessage(Channel.CreateAccount, 
-                        Channel.AccountCreated, register, true);
+                    return await rabbitMQPubSub.Handle(Channel.CreateAccount, SerializeObject(register));
                 });
 
             FieldAsync<StringGraphType>(
@@ -111,8 +105,7 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                 {
                     var login = context.GetArgument<Login>("login");
 
-                    return await redisPubSub.HandleAndReturnMessage(Channel.LoginRequest, 
-                        Channel.LoginResponse, login, true);
+                    return await rabbitMQPubSub.Handle(Channel.LoginRequest, SerializeObject(login));
                 });
 
             FieldAsync<StringGraphType>(
@@ -123,9 +116,9 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                 {
                     var request = context.GetArgument<Request>("request");
                     request.Requester = GetUserId();
+                    request.Status = "pending";
 
-                    return await redisPubSub.HandleAndReturnMessage(Channel.PlaceRequest, 
-                        Channel.PlaceRequestResponse, request, true);
+                    return await rabbitMQPubSub.Handle(Channel.PlaceRequest, SerializeObject(request));
                 }).AuthorizeWith(Policies.Requester);
 
             FieldAsync<StringGraphType>(
@@ -139,9 +132,8 @@ namespace ApiGateway.GraphQLObj.GrahQLMutations
                 {
                     var request = context.GetArgument<RequestApproval>("approveRequest");
 
-                    return await redisPubSub
-                        .HandleAndReturnMessage(Channel.RequestApproval, 
-                            Channel.RequestApprovalResponse, request, true);
+                    return await rabbitMQPubSub
+                        .Handle(Channel.RequestApproval, SerializeObject(request));
                 }).AuthorizeWith(Policies.Approver);
         }
     }

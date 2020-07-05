@@ -1,6 +1,6 @@
-using InventoryService.BackgroundServices.Categories;
-using InventoryService.BackgroundServices.Products;
-using InventoryService.BackgroundServices.Requests;
+using InventoryService.BackgroundServices.RabbitMQ.Categories;
+using InventoryService.BackgroundServices.RabbitMQ.Products;
+using InventoryService.BackgroundServices.RabbitMQ.Requests;
 using InventoryService.Domain;
 using InventoryService.Domain.Services;
 using InventoryService.Persistence;
@@ -33,21 +33,23 @@ namespace InventoryService
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IRequestService, RequestService>();
 
-            services.AddHostedService<GetCategoriesService>();
-            services.AddHostedService<GetCategoryByIdService>();
-            services.AddHostedService<GetProductsService>();
-            services.AddHostedService<CreateProductService>();
-            services.AddHostedService<UpdateProductService>();
-            services.AddHostedService<DeleteProductService>();
-            services.AddHostedService<GetProductsByCategoryIdService>();
-            services.AddHostedService<CreateCategoryService>();
-            services.AddHostedService<UpdateCategoryService>();
-            services.AddHostedService<DeleteCategoryService>();
-            services.AddHostedService<PlaceRequestService>();
-            services.AddHostedService<RequestApprovalService>();
-            services.AddHostedService<GetAvailableProductsService>();
-            services.AddHostedService<GetAllRequestService>();
-            services.AddHostedService<GetAllRequestByRequesterService>();
+            services.AddHostedService<RabGetAllCategoryService>();
+            services.AddHostedService<RadGetCategoryByIdService>();
+            services.AddHostedService<RabGetAllAvailableProductService>();
+            services.AddHostedService<RabGetAllProductService>();
+            services.AddHostedService<RabGetProductByIdService>();
+            services.AddHostedService<RabGetProductsForCategoryService>();
+            services.AddHostedService<RabGetAllRequestService>();
+            services.AddHostedService<RabGetAllRequestByRequesterService>();
+            services.AddHostedService<RabCreateCategoryService>();
+            services.AddHostedService<RabCreateProductService>();
+            services.AddHostedService<RabUpdateCategoryService>();
+            services.AddHostedService<RabUpdateProductService>();
+            services.AddHostedService<RabDeleteCategoryService>();
+            services.AddHostedService<RabDeleteProductService>();
+            services.AddHostedService<RabRequestApprovalService>();
+            services.AddHostedService<RabPlaceRequestService>();
+
 
             services.AddControllers()
                     .AddNewtonsoftJson(o => 

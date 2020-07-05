@@ -32,8 +32,8 @@ namespace IdentityService
                 .AddEntityFrameworkStores<DataContext>();
 
             services.AddTransient<IAuthService, AuthService>();
-            services.AddHostedService<RegisterAccount>();
-            services.AddHostedService<AccountLogin>();
+            services.AddHostedService<RegisterAccountService>();
+            services.AddHostedService<AccountLoginService>();
 
             services.AddControllers()
                     .AddNewtonsoftJson(o => 

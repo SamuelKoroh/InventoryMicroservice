@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using ApiGateway.AuthValidationRules;
 using ApiGateway.GraphQLObj.Parameters;
 using GraphQL;
 using GraphQL.Types;
 using GraphQL.Validation;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +12,7 @@ namespace ApiGateway.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class GraphQLController : Controller
     {
         private readonly ISchema _schema;
@@ -32,7 +29,7 @@ namespace ApiGateway.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
         [HttpPost]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         public async Task<IActionResult> Post([FromBody] GraphQLQueryParam query, [FromServices] IEnumerable<IValidationRule> validationRules)
         {
             if (query == null)

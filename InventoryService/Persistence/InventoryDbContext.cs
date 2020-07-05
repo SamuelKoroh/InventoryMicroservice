@@ -1,4 +1,5 @@
 ﻿//using InventoryService.Bootstrap;
+using InventoryService.Bootstrap;
 using InventoryService.Domain.Models;
 using InventoryService.Persistence.EntityConfigurations;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,12 @@ namespace InventoryService.Persistence
         public InventoryDbContext(DbContextOptions<InventoryDbContext> options)
             :base(options)
         {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.SeedSampleData();
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

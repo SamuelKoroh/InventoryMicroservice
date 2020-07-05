@@ -47,6 +47,7 @@ namespace ApiGateway
             services.AddTransient<RequestInputType>();
             services.AddTransient<RequestApprovalInputType>();
             services.AddTransient<IRedisPubSub, RedisPubSubHandler>();
+            services.AddTransient<IRabbitMQPubSub, RabbitMQPubSub>();
 
             services.AddScoped<IDependencyResolver>(type => new FuncDependencyResolver(type.GetService));
             services.AddScoped<ISchema, AppSchema>();
