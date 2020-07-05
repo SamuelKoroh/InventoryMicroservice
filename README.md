@@ -17,7 +17,7 @@ This project is a sample product Inventory management system using micro service
 
   - Inventory Keeper must be able to add new item to inventory
   - Update Inventory
-  - see all items in inventory and the quantity available
+  - See all items in inventory and the quantity available
 
   ### Requester
   
@@ -28,9 +28,9 @@ This project is a sample product Inventory management system using micro service
   - Must be able to approve or disapprove request from a requester.
 
 # System Testing 
-  - Clone to the project or download and extract the project files.
-  - Run the migrations for both IdentityService and InventoryService.
-  - Setup your solution startup project to Multiple Start projects from solution properties.
-  - Then set all poroject to start
+  - Clone the project or download and extract the project files.
+  - Run migration for both IdentityService and InventoryService project.
+  - Setup your solution startup project to Multiple Start projects from the solution properties.
+  - Then set all poroject to start.
   - Start the application
   - Happy Hacking
