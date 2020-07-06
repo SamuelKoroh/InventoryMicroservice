@@ -64,7 +64,9 @@ namespace InventoryService.BackgroundServices.RabbitMQ.Products
 
         public override void Dispose()
         {
+            channel.Close();
             channel.Dispose();
+            connection.Close();
             connection.Dispose();
         }
     }

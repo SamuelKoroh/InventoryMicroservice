@@ -58,7 +58,9 @@ namespace ApiGateway.RedisPubSub
 
         public void Dispose()
         {
+            _channel.Close();
             _channel.Dispose();
+            _connection.Close();
             _connection.Dispose();
         }
     }

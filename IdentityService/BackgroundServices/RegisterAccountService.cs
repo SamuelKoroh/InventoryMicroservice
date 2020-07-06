@@ -65,7 +65,9 @@ namespace IdentityService.BackgroundServices
 
         public override void Dispose()
         {
+            channel.Close();
             channel.Dispose();
+            connection.Close();
             connection.Dispose();
         }
     }
