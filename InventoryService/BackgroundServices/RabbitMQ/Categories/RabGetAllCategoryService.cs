@@ -13,19 +13,23 @@ namespace InventoryService.BackgroundServices.RabbitMQ.Categories
 {
     public class RabGetAllCategoryService : BackgroundService
     {
+        private readonly IConnection connection;
+        private readonly IModel channel;
+
+        public IServiceProvider Services { get; }
+
         public RabGetAllCategoryService(IServiceProvider service)
         {
-            Service = service;
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            connection = factory.CreateConnection();
+            channel = connection.CreateModel();
+
+            Services = service;
         }
 
-        public IServiceProvider Service { get; }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-            var connection = factory.CreateConnection();
-            var channel = connection.CreateModel();
-            
             channel.QueueDeclare(queue: "get-all-category", durable: false,
                 exclusive: false, autoDelete: false, arguments: null);
             channel.BasicQos(0, 1, false);
@@ -42,7 +46,7 @@ namespace InventoryService.BackgroundServices.RabbitMQ.Categories
                  replyProps.CorrelationId = props.CorrelationId;
 
 
-                 using var scope = Service.CreateScope();
+                 using var scope = Services.CreateScope();
                  var _categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
 
                  var categories = await _categoryService.GetCategories();
@@ -57,6 +61,12 @@ namespace InventoryService.BackgroundServices.RabbitMQ.Categories
              };
 
             return Task.CompletedTask;
+        }
+
+        public override void Dispose()
+        {
+            channel.Dispose();
+            connection.Dispose();
         }
     }
 }

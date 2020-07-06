@@ -55,5 +55,11 @@ namespace ApiGateway.RedisPubSub
             cancellationToken.Register(() => _callbackMapper.TryRemove(correlationId, out var tmp));
             return tcs.Task;
         }
+
+        public void Dispose()
+        {
+            _channel.Dispose();
+            _connection.Dispose();
+        }
     }
 }

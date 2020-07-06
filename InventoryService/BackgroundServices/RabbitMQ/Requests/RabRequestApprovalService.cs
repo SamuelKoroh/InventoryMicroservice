@@ -14,19 +14,22 @@ namespace InventoryService.BackgroundServices.RabbitMQ.Requests
 {
     public class RabRequestApprovalService : BackgroundService
     {
+        private readonly IConnection connection;
+        private readonly IModel channel;
+
         public IServiceProvider Services { get; }
 
         public RabRequestApprovalService(IServiceProvider serviceProvider)
         {
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            connection = factory.CreateConnection();
+            channel = connection.CreateModel();
+
             Services = serviceProvider;
         }
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-            var connection = factory.CreateConnection();
-            var channel = connection.CreateModel();
-
-            channel.QueueDeclare(queue: "approve-request", durable: false,
+           channel.QueueDeclare(queue: "approve-request", durable: false,
                 exclusive: false, autoDelete: false, arguments: null);
             channel.BasicQos(0, 1, false);
 
@@ -65,6 +68,12 @@ namespace InventoryService.BackgroundServices.RabbitMQ.Requests
             };
 
             return Task.CompletedTask;
+        }
+
+        public override void Dispose()
+        {
+            channel.Dispose();
+            connection.Dispose();
         }
     }
 }

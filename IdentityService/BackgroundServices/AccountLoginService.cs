@@ -15,18 +15,21 @@ namespace IdentityService.BackgroundServices
 {
     public class AccountLoginService : BackgroundService
     {
+        private readonly IConnection connection;
+        private readonly IModel channel;
+
         public IServiceProvider Services { get; }
 
         public AccountLoginService(IServiceProvider serviceProvider)
         {
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            connection = factory.CreateConnection();
+            channel = connection.CreateModel();
+
             Services = serviceProvider;
         }
         protected override  Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-            var connection = factory.CreateConnection();
-            var channel = connection.CreateModel();
-
             channel.QueueDeclare(queue: "login-request", durable: false,
                 exclusive: false, autoDelete: false, arguments: null);
             channel.BasicQos(0, 1, false);
@@ -57,6 +60,12 @@ namespace IdentityService.BackgroundServices
 
             };
             return Task.CompletedTask;
+        }
+
+        public override void Dispose()
+        {
+            channel.Dispose();
+            connection.Dispose();
         }
     }
 }
