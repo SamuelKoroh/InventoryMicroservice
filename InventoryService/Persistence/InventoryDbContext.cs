@@ -18,7 +18,7 @@ namespace InventoryService.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.SeedSampleData();
+            //modelBuilder.SeedSampleData();
             base.OnModelCreating(modelBuilder);
         }
     }
